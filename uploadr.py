@@ -65,6 +65,7 @@ import hashlib
 import mimetools
 import mimetypes
 import os
+from os.path import expanduser
 import shelve
 import string
 import time
@@ -90,6 +91,17 @@ import itertools
 # Location to scan for new files
 #
 FILES_DIR = ""
+
+#
+# Only upload files, but do not delete any existing files, ever - make sure, that no duplicates are uploaded, though
+#
+UPLOAD_ONLY = 0
+
+#
+# Deleted files that have been uploaded locally - NOT TO BE USED FOR BACKUP
+#
+DELETE_LOCALS = 0
+
 #
 #   Flickr settings
 #
@@ -133,8 +145,24 @@ MANAGE_CHANGES = True
 #
 #   Your own API key and secret message
 #
-FLICKR["api_key"] = ""
-FLICKR["secret"] = ""
+# Load these from a different file, not need to put them into this script directly
+key = ""
+sec = ""
+auth_file = expanduser("~") + "/.flickrKey"
+if (os.path.isfile(auth_file)):
+    f=open(auth_file,'r')
+    i = 0
+    for line in f:
+        if i == 0:
+            key = line[:-1]
+        if i == 1:
+            sec = line[:-1]
+        i+=1
+else:
+    print 'Authentication file (~/.flickrKey) not found!'
+
+FLICKR["api_key"] = key
+FLICKR["secret"] = sec
 
 ##
 ##  You shouldn't need to modify anything below here
@@ -829,6 +857,13 @@ class Uploadr:
             print(str(sys.exc_info()))
         return False
 
+    # Method to remove local files (that have been uploaded successfully)
+    def deleteLocalFiles( self ):
+        print('*****Deleting existing photos on local harddrive*****')
+        print('*****TO BE IMPLEMENTED*****')
+        print('*****Completed deletion of photos on local harddrive*****')
+        return
+
     # Method to clean unused sets
     def removeUselessSetsTable( self ) :
         print('*****Removing empty Sets from DB*****')
@@ -935,10 +970,14 @@ if __name__ == "__main__":
         if ( not flick.checkToken() ):
             flick.authenticate()
         #flick.displaySets()
-        flick.removeUselessSetsTable()
+        if (not UPLOAD_ONLY):
+            flick.removeUselessSetsTable()
         flick.getFlickrSets()
         flick.upload()
-        flick.removeDeletedMedia()
+        if (not UPLOAD_ONLY):
+            flick.removeDeletedMedia()
         flick.createSets()
         flick.addTagsToUploadedPhotos()
+        if (DELETE_LOCALS):
+            flick.deleteLocalFiles()
 print("--------- End time: " + time.strftime("%c") + " ---------");
