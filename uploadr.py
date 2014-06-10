@@ -90,7 +90,7 @@ import itertools
 #
 # Location to scan for new files
 #
-FILES_DIR = ""
+FILES_DIR = "/path/to/upload/folder"
 
 #
 # Only upload files, but do not delete any existing files, ever - make sure, that no duplicates are uploaded, though
@@ -148,7 +148,7 @@ MANAGE_CHANGES = True
 # Load these from a different file, not need to put them into this script directly
 key = ""
 sec = ""
-auth_file = expanduser("~") + "/.flickrKey"
+auth_file = os.path.join(expanduser("~"), ".flickrKey")
 if (os.path.isfile(auth_file)):
     f=open(auth_file,'r')
     i = 0
